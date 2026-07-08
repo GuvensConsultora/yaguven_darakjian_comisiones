@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Configuración de tramos por defecto (editable; no se pisa en upgrades). -->
+    <record id="commission_config_default" model="yaguven.commission.config" context="{'tracking_disable': True}">
+        <field name="name">Comisiones — Darakjian</field>
+        <field name="company_id" ref="base.main_company"/>
+        <field name="pct_below">3.0</field>
+        <field name="pct_target">6.0</field>
+        <field name="pct_super">9.0</field>
+        <field name="super_threshold_pct">125.0</field>
+    </record>
+</odoo>

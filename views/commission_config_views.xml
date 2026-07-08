@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="view_commission_config_list" model="ir.ui.view">
+        <field name="name">yaguven.commission.config.list</field>
+        <field name="model">yaguven.commission.config</field>
+        <field name="arch" type="xml">
+            <list>
+                <field name="name"/>
+                <field name="company_id" groups="base.group_multi_company"/>
+                <field name="pct_below"/>
+                <field name="pct_target"/>
+                <field name="pct_super"/>
+                <field name="super_threshold_pct"/>
+                <field name="active" widget="boolean_toggle"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_commission_config_form" model="ir.ui.view">
+        <field name="name">yaguven.commission.config.form</field>
+        <field name="model">yaguven.commission.config</field>
+        <field name="arch" type="xml">
+            <form>
+                <sheet>
+                    <div class="oe_title">
+                        <h1><field name="name" placeholder="Comisiones — ..."/></h1>
+                    </div>
+                    <group>
+                        <group string="Alcance">
+                            <field name="company_id" groups="base.group_multi_company"
+                                   options="{'no_create': True}"/>
+                            <field name="active"/>
+                        </group>
+                        <group string="Tramos (cliff sobre margen)">
+                            <field name="pct_below"/>
+                            <field name="pct_target"/>
+                            <field name="pct_super"/>
+                            <field name="super_threshold_pct"/>
+                        </group>
+                    </group>
+                    <div class="text-muted">
+                        El porcentaje del tramo alcanzado se aplica sobre el margen total
+                        del mes (no por tramos marginales). El tramo lo determina el
+                        volumen facturado del vendedor contra su objetivo mensual.
+                    </div>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_commission_config" model="ir.actions.act_window">
+        <field name="name">Configuración de comisiones</field>
+        <field name="res_model">yaguven.commission.config</field>
+        <field name="view_mode">list,form</field>
+    </record>
+
+</odoo>

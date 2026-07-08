@@ -1,0 +1,139 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="view_commission_target_list" model="ir.ui.view">
+        <field name="name">yaguven.commission.target.list</field>
+        <field name="model">yaguven.commission.target</field>
+        <field name="arch" type="xml">
+            <list default_order="year desc, month desc, salesperson_id">
+                <field name="salesperson_id"/>
+                <field name="year"/>
+                <field name="month"/>
+                <field name="objective_usd" widget="monetary"/>
+                <field name="volume_total" widget="monetary" sum="Volumen"/>
+                <field name="tier"
+                       decoration-muted="tier == 'below'"
+                       decoration-info="tier == 'target'"
+                       decoration-success="tier == 'super'"
+                       widget="badge"/>
+                <field name="pct"/>
+                <field name="margin_total" widget="monetary" sum="Margen"/>
+                <field name="commission_earned" widget="monetary" sum="Devengada"/>
+                <field name="commission_collected" widget="monetary" sum="Cobrada"/>
+                <field name="commission_pending" widget="monetary" sum="Pendiente"/>
+                <field name="currency_id" column_invisible="1"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_commission_target_form" model="ir.ui.view">
+        <field name="name">yaguven.commission.target.form</field>
+        <field name="model">yaguven.commission.target</field>
+        <field name="arch" type="xml">
+            <form>
+                <header>
+                    <button name="action_recompute" type="object"
+                            string="Recalcular" class="oe_highlight"/>
+                    <field name="last_recompute" widget="datetime" readonly="1"
+                           nolabel="1" class="oe_inline ms-2"/>
+                </header>
+                <sheet>
+                    <div class="oe_title">
+                        <h1><field name="name" readonly="1"/></h1>
+                    </div>
+                    <group>
+                        <group string="Carga (Janel)">
+                            <field name="salesperson_id" options="{'no_create_edit': True}"/>
+                            <field name="year"/>
+                            <field name="month"/>
+                            <field name="objective_usd" widget="monetary"/>
+                            <field name="currency_id" invisible="1"/>
+                            <field name="company_id" groups="base.group_multi_company"
+                                   options="{'no_create': True}"/>
+                            <field name="config_id" groups="base.group_no_one"
+                                   options="{'no_create': True}"/>
+                        </group>
+                        <group string="Resultado del mes">
+                            <field name="volume_total" widget="monetary" readonly="1"/>
+                            <field name="tier" widget="badge" readonly="1"
+                                   decoration-muted="tier == 'below'"
+                                   decoration-info="tier == 'target'"
+                                   decoration-success="tier == 'super'"/>
+                            <field name="pct" readonly="1"/>
+                            <field name="margin_total" widget="monetary" readonly="1"/>
+                            <field name="commission_earned" widget="monetary" readonly="1"/>
+                            <field name="commission_collected" widget="monetary" readonly="1"/>
+                            <field name="commission_pending" widget="monetary" readonly="1"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Detalle por comprobante" name="lines">
+                            <field name="line_ids" readonly="1">
+                                <list default_order="invoice_date, move_id">
+                                    <field name="move_id"/>
+                                    <field name="invoice_date"/>
+                                    <field name="move_type" optional="hide"/>
+                                    <field name="volume" widget="monetary" sum="Volumen"/>
+                                    <field name="cost_total" widget="monetary" sum="Costo"/>
+                                    <field name="margin" widget="monetary" sum="Margen"/>
+                                    <field name="pct_applied"/>
+                                    <field name="commission_amount" widget="monetary" sum="Devengada"/>
+                                    <field name="is_collected" widget="boolean_toggle"/>
+                                    <field name="commission_payable" widget="monetary" sum="Pagable"/>
+                                    <field name="currency_id" column_invisible="1"/>
+                                </list>
+                            </field>
+                        </page>
+                    </notebook>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_commission_target_search" model="ir.ui.view">
+        <field name="name">yaguven.commission.target.search</field>
+        <field name="model">yaguven.commission.target</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="salesperson_id"/>
+                <field name="year"/>
+                <filter name="filter_mine" string="Mías"
+                        domain="[('salesperson_id', '=', uid)]"/>
+                <separator/>
+                <filter name="filter_below" string="Bajo objetivo"
+                        domain="[('tier', '=', 'below')]"/>
+                <filter name="filter_target" string="En objetivo"
+                        domain="[('tier', '=', 'target')]"/>
+                <filter name="filter_super" string="Sobre objetivo"
+                        domain="[('tier', '=', 'super')]"/>
+                <separator/>
+                <filter name="filter_pending" string="Con pendiente de cobro"
+                        domain="[('commission_pending', '>', 0)]"/>
+                <group expand="0" string="Agrupar por">
+                    <filter name="groupby_salesperson" string="Vendedor"
+                            context="{'group_by': 'salesperson_id'}"/>
+                    <filter name="groupby_year" string="Año"
+                            context="{'group_by': 'year'}"/>
+                    <filter name="groupby_month" string="Mes"
+                            context="{'group_by': 'month'}"/>
+                    <filter name="groupby_tier" string="Tramo"
+                            context="{'group_by': 'tier'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_commission_target" model="ir.actions.act_window">
+        <field name="name">Objetivos y comisiones</field>
+        <field name="res_model">yaguven.commission.target</field>
+        <field name="view_mode">list,form</field>
+        <field name="search_view_id" ref="view_commission_target_search"/>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">Cargá el primer objetivo mensual.</p>
+            <p>Elegí vendedor, mes y objetivo de volumen. La comisión se calcula sola
+               a partir de las facturas del vendedor en el mes.</p>
+        </field>
+    </record>
+
+</odoo>

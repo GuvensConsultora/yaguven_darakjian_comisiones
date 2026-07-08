@@ -1,0 +1,7 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_commission_config_salesman,commission.config.salesman,model_yaguven_commission_config,sales_team.group_sale_salesman,1,0,0,0
+access_commission_config_manager,commission.config.manager,model_yaguven_commission_config,sales_team.group_sale_manager,1,1,1,1
+access_commission_target_salesman,commission.target.salesman,model_yaguven_commission_target,sales_team.group_sale_salesman,1,0,0,0
+access_commission_target_manager,commission.target.manager,model_yaguven_commission_target,sales_team.group_sale_manager,1,1,1,1
+access_commission_line_salesman,commission.line.salesman,model_yaguven_commission_line,sales_team.group_sale_salesman,1,0,0,0
+access_commission_line_manager,commission.line.manager,model_yaguven_commission_line,sales_team.group_sale_manager,1,1,1,1

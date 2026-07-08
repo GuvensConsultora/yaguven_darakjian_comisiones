@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="view_commission_line_list" model="ir.ui.view">
+        <field name="name">yaguven.commission.line.list</field>
+        <field name="model">yaguven.commission.line</field>
+        <field name="arch" type="xml">
+            <list default_order="invoice_date desc, move_id" create="false">
+                <field name="salesperson_id"/>
+                <field name="move_id"/>
+                <field name="invoice_date"/>
+                <field name="volume" widget="monetary" sum="Volumen"/>
+                <field name="cost_total" widget="monetary" sum="Costo"/>
+                <field name="margin" widget="monetary" sum="Margen"/>
+                <field name="pct_applied"/>
+                <field name="commission_amount" widget="monetary" sum="Devengada"/>
+                <field name="is_collected" widget="boolean_toggle"/>
+                <field name="commission_payable" widget="monetary" sum="Pagable"/>
+                <field name="currency_id" column_invisible="1"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_commission_line_form" model="ir.ui.view">
+        <field name="name">yaguven.commission.line.form</field>
+        <field name="model">yaguven.commission.line</field>
+        <field name="arch" type="xml">
+            <form create="false">
+                <sheet>
+                    <group>
+                        <group string="Origen">
+                            <field name="target_id"/>
+                            <field name="salesperson_id"/>
+                            <field name="move_id"/>
+                            <field name="invoice_date"/>
+                            <field name="move_type"/>
+                        </group>
+                        <group string="Cálculo">
+                            <field name="volume" widget="monetary"/>
+                            <field name="cost_total" widget="monetary"/>
+                            <field name="margin" widget="monetary"/>
+                            <field name="pct_applied"/>
+                            <field name="commission_amount" widget="monetary"/>
+                            <field name="is_collected"/>
+                            <field name="commission_payable" widget="monetary"/>
+                            <field name="currency_id" invisible="1"/>
+                        </group>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_commission_line_search" model="ir.ui.view">
+        <field name="name">yaguven.commission.line.search</field>
+        <field name="model">yaguven.commission.line</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="salesperson_id"/>
+                <field name="move_id"/>
+                <filter name="filter_collected" string="Cobradas"
+                        domain="[('is_collected', '=', True)]"/>
+                <filter name="filter_not_collected" string="Sin cobrar"
+                        domain="[('is_collected', '=', False)]"/>
+                <group expand="0" string="Agrupar por">
+                    <filter name="groupby_salesperson" string="Vendedor"
+                            context="{'group_by': 'salesperson_id'}"/>
+                    <filter name="groupby_collected" string="Cobro"
+                            context="{'group_by': 'is_collected'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_commission_line" model="ir.actions.act_window">
+        <field name="name">Líneas de comisión</field>
+        <field name="res_model">yaguven.commission.line</field>
+        <field name="view_mode">list,form</field>
+        <field name="search_view_id" ref="view_commission_line_search"/>
+    </record>
+
+</odoo>
