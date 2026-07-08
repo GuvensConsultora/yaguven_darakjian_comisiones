@@ -110,7 +110,7 @@
                 <separator/>
                 <filter name="filter_pending" string="Con pendiente de cobro"
                         domain="[('commission_pending', '&gt;', 0)]"/>
-                <group string="Agrupar por">
+                <group>
                     <filter name="groupby_salesperson" string="Vendedor"
                             context="{'group_by': 'salesperson_id'}"/>
                     <filter name="groupby_year" string="Año"
