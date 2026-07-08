@@ -62,7 +62,7 @@
                         domain="[('is_collected', '=', True)]"/>
                 <filter name="filter_not_collected" string="Sin cobrar"
                         domain="[('is_collected', '=', False)]"/>
-                <group expand="0" string="Agrupar por">
+                <group string="Agrupar por">
                     <filter name="groupby_salesperson" string="Vendedor"
                             context="{'group_by': 'salesperson_id'}"/>
                     <filter name="groupby_collected" string="Cobro"

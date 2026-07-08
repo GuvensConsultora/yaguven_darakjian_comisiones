@@ -109,8 +109,8 @@
                         domain="[('tier', '=', 'super')]"/>
                 <separator/>
                 <filter name="filter_pending" string="Con pendiente de cobro"
-                        domain="[('commission_pending', '>', 0)]"/>
-                <group expand="0" string="Agrupar por">
+                        domain="[('commission_pending', '&gt;', 0)]"/>
+                <group string="Agrupar por">
                     <filter name="groupby_salesperson" string="Vendedor"
                             context="{'group_by': 'salesperson_id'}"/>
                     <filter name="groupby_year" string="Año"
