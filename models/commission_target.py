@@ -1,8 +1,12 @@
 import calendar
+import re
 from datetime import date
 
 from odoo import _, api, fields, models
 from odoo.exceptions import ValidationError
+
+# Código entre corchetes al inicio del nombre de línea: "[DRNG.00085629] LAB GROWN ..."
+CODE_RE = re.compile(r'^\s*\[([^\]]+)\]')
 
 MONTHS = [
     ('1', 'Enero'), ('2', 'Febrero'), ('3', 'Marzo'), ('4', 'Abril'),
@@ -192,21 +196,54 @@ class YaguvenCommissionTarget(models.Model):
             ('invoice_date', '<=', date_to),
         ])
 
-    def _move_snapshot(self, move):
+    def _product_from_line_name(self, name, cache=None):
+        """Recupera el producto por el [código] embebido en el nombre de la línea.
+
+        Las facturas migradas traen líneas de producto SIN product_id enlazado
+        pero con el default_code entre corchetes en el texto ([DRNG.00085629] ...).
+        Macheo por default_code exacto y, si no, por sufijo normalizado (B.7).
+        Devuelve un recordset (vacío si no resuelve).
+        """
+        Product = self.env['product.product']
+        if not name:
+            return Product.browse()
+        m = CODE_RE.match(name)
+        if not m:
+            return Product.browse()
+        code = m.group(1).strip()
+        if cache is not None and code in cache:
+            return cache[code]
+        prod = Product.search([('default_code', '=', code)], limit=1)
+        if not prod and '.' in code:
+            # Sufijo tras el último punto, sin ceros a la izquierda (B.7).
+            suffix = code.split('.')[-1]
+            prod = Product.search([('default_code', '=like', '%.' + suffix)], limit=1)
+        if cache is not None:
+            cache[code] = prod
+        return prod
+
+    def _move_snapshot(self, move, code_cache=None):
         """Snapshot de volumen (neto) y costo del comprobante, en moneda de la compañía.
 
-        NC (out_refund) entran con signo negativo. El costo usa el costo del
-        producto en Odoo (standard_price) leído en el contexto de la compañía.
+        - Volumen = neto de TODAS las líneas de venta (display_type='product'),
+          enlazadas o no a un producto — es el volumen de ventas del tramo.
+        - Costo por línea: standard_price del product_id; si la línea no tiene
+          product_id (data migrada), se recupera el producto por el [código] del
+          nombre. Si no se resuelve, costo 0 (queda como margen puro).
+        - NC (out_refund) entran con signo negativo.
         """
         self.ensure_one()
         company = self.company_id
         sign = -1.0 if move.move_type == 'out_refund' else 1.0
         net_move_ccy = 0.0
         cost_total = 0.0
-        for line in move.invoice_line_ids.filtered(lambda l: l.product_id):
+        for line in move.invoice_line_ids:
+            if line.display_type and line.display_type != 'product':
+                continue
             net_move_ccy += line.price_subtotal
-            unit_cost = line.product_id.with_company(company).standard_price
-            cost_total += unit_cost * line.quantity
+            product = line.product_id or self._product_from_line_name(line.name, code_cache)
+            if product:
+                cost_total += product.with_company(company).standard_price * line.quantity
         # Neto en moneda de la compañía (USD); el costo ya viene en moneda de la compañía.
         if move.currency_id and move.currency_id != company.currency_id:
             rate_date = move.invoice_date or fields.Date.context_today(self)
@@ -228,9 +265,10 @@ class YaguvenCommissionTarget(models.Model):
 
         existing = {line.move_id.id: line for line in self.line_ids}
         seen = set()
+        code_cache = {}
         for move in moves:
             seen.add(move.id)
-            snap = self._move_snapshot(move)
+            snap = self._move_snapshot(move, code_cache)
             line = existing.get(move.id)
             if line:
                 # Volumen y costo quedan congelados; solo refrescamos el cobro.
